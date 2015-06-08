@@ -73,6 +73,17 @@ function guessWindowXID(win) {
 	return null;
 }
 
+_isIgnorebleWindow: function(title) {
+
+	for (let i = 0; i < this.IGNORABLE_WINDOWS.length; i++) {
+		if (title.indexOf(this.IGNORABLE_WINDOWS[i]) != -1) {
+			return true;
+		}
+	}
+
+	return false;
+},
+
 /**
  * Tells the window manager to hide the titlebar on maximised windows.
  *
@@ -92,7 +103,22 @@ function guessWindowXID(win) {
  * is `true`. Internal use.
  */
 function setHideTitlebar(win, hide, stopAdding) {
-	LOG('setHideTitlebar: ' + win.get_title() + ': ' + hide + (stopAdding ? ' (2)' : ''));
+
+	let title = win.get_title();
+
+	global.log(this.IGNORABLE_WINDOWS);
+
+	if (title == null || _isIgnorebleWindow(title)) {
+		return;
+	}
+
+
+	if (title == null || title.indexOf("IntelliJ IDEA") != -1) {
+		LOG("Don't hide!" + title);
+		return;
+	}
+
+	LOG('setHideTitlebar: ' + title + ': ' + hide + (stopAdding ? ' (2)' : ''));
 
 	let id = guessWindowXID(win);
 	/* Newly-created windows are added to the workspace before
@@ -214,7 +240,13 @@ function onChangeNWorkspaces() {
 /*
  * Subextension hooks
  */
-function init() {}
+function init() {
+	this.IGNORABLE_WINDOWS = [
+ 		"IntelliJ IDEA"
+ 	];
+
+ 	this.IGNORABLE_WINDOWS_LENGTH = this.IGNORABLE_WINDOWS.length;
+}
 
 let changeWorkspaceID = 0;
 function enable() {
