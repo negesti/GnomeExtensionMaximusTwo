@@ -1,5 +1,7 @@
+const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Mainloop = imports.mainloop;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 const Meta = imports.gi.Meta;
 const Util = imports.misc.util;
 
@@ -73,15 +75,20 @@ function guessWindowXID(win) {
 	return null;
 }
 
+/**
+* Changes to config are not loaded without restart. 
+*
+* Reloading would require that we undo the xprop statement, otherwise it has no effect
+*/
+let ignorableApps = [];
+
 function _isIgnorebleWindow(title) {
-
-	for (let i = 0; i < this.IGNORABLE_WINDOWS.length; i++) {
-		if (title.indexOf(this.IGNORABLE_WINDOWS[i]) != -1) {
-			return true;
-		}
+  for (let i = 0; i < ignorableApps.length; i++) {
+    if (title.indexOf(ignorableApps[i]) != -1) {
+	  return true;
 	}
-
-	return false;
+  }
+  return false;
 }
 
 /**
@@ -238,11 +245,30 @@ function onChangeNWorkspaces() {
  * Subextension hooks
  */
 function init() {
-	this.IGNORABLE_WINDOWS = [
- 		"IntelliJ IDEA"
- 	];
+  _loadSettings();
+}
 
- 	this.IGNORABLE_WINDOWS_LENGTH = this.IGNORABLE_WINDOWS.length;
+function _loadSettings() {
+  let schema = "org.gnome.shell.extensions.maximus-two";
+
+  const GioSSS = Gio.SettingsSchemaSource;
+
+  let schemaDir = Me.dir.get_child('schemas');
+  let schemaSource;
+  if (schemaDir.query_exists(null)) {
+    schemaSource = GioSSS.new_from_directory(schemaDir.get_path(), GioSSS.get_default(), false);
+  } else {
+    schemaSource = GioSSS.get_default();
+  }
+
+  schema = schemaSource.lookup(schema, true);
+  if (!schema) {
+    throw new Error('Schema ' + schema + ' could not be found for extension ' +
+      Me.metadata.uuid + '. Please check your installation.');
+  }
+
+  this._settingsObject = new Gio.Settings({ settings_schema: schema });
+  ignorableApps = JSON.parse(this._settingsObject.get_string("ignorable-apps"));
 }
 
 let changeWorkspaceID = 0;
