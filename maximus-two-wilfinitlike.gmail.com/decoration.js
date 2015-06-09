@@ -73,7 +73,7 @@ function guessWindowXID(win) {
 	return null;
 }
 
-_isIgnorebleWindow: function(title) {
+function _isIgnorebleWindow(title) {
 
 	for (let i = 0; i < this.IGNORABLE_WINDOWS.length; i++) {
 		if (title.indexOf(this.IGNORABLE_WINDOWS[i]) != -1) {
@@ -82,7 +82,7 @@ _isIgnorebleWindow: function(title) {
 	}
 
 	return false;
-},
+}
 
 /**
  * Tells the window manager to hide the titlebar on maximised windows.
@@ -106,15 +106,12 @@ function setHideTitlebar(win, hide, stopAdding) {
 
 	let title = win.get_title();
 
-	global.log(this.IGNORABLE_WINDOWS);
-
 	if (title == null || _isIgnorebleWindow(title)) {
 		return;
 	}
 
 
 	if (title == null || title.indexOf("IntelliJ IDEA") != -1) {
-		LOG("Don't hide!" + title);
 		return;
 	}
 
