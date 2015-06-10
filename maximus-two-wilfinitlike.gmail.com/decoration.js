@@ -116,11 +116,6 @@ function setHideTitlebar(win, hide, stopAdding) {
 		return;
 	}
 
-
-	if (title == null || title.indexOf("IntelliJ IDEA") != -1) {
-		return;
-	}
-
 	LOG('setHideTitlebar: ' + title + ': ' + hide + (stopAdding ? ' (2)' : ''));
 
 	let id = guessWindowXID(win);
